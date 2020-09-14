@@ -34,29 +34,38 @@ func main() {
 }
 
 func search(keyword string, lang language) string {
-	url := "https://www.db.yugioh-card.com/yugiohdb/card_search.action"
-	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
-
-	res, _ := http.Get(fmt.Sprintf("%s?%s", url, param))
-
-	fmt.Printf("%s?%s\n", url, param)
+	res, _ := http.Get(apiURL(keyword, lang))
 	defer res.Body.Close()
 
 	scn := bufio.NewScanner(res.Body)
 
-	var b bool
+	var cardNameBlock bool
+	var cardSpecBlock bool
 	for scn.Scan() {
-		if strings.Contains(scn.Text(), "<dt class=\"box_card_name\"") {
-			b = true
+		if strings.Contains(scn.Text(), "<dt class=\"box_card_name\">") {
+			cardNameBlock = true
 		}
-		if strings.Contains(scn.Text(), "</dl>") {
-			b = false
+		if strings.Contains(scn.Text(), "</dt>") {
+			cardNameBlock = false
+		}
+		if strings.Contains(scn.Text(), "<dd class=\"box_card_spec\">") {
+			cardSpecBlock = true
+		}
+		if strings.Contains(scn.Text(), "</dd>") {
+			cardSpecBlock = false
 		}
 
-		if b {
+		if cardNameBlock || cardSpecBlock {
 			fmt.Println(scn.Text())
 		}
 	}
 
 	return ""
+}
+
+func apiURL(keyword string, lang language) string {
+	url := "https://www.db.yugioh-card.com/yugiohdb/card_search.action"
+	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
+
+	return fmt.Sprintf("%s?%s", url, param)
 }
