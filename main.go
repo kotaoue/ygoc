@@ -23,6 +23,16 @@ const (
 	langKO          = "ko" // 한글
 )
 
+// Card is parameter set for OCG Card.
+type Card struct {
+	Name      string
+	Attribute string
+	Effect    string
+	Level     int
+	Attack    int
+	Defence   int
+}
+
 var lang language
 
 func init() {
