@@ -23,6 +23,19 @@ const (
 	langKO          = "ko" // 한글
 )
 
+type dom int
+
+const (
+	domNone dom = iota
+	domName
+	domSpec
+	domAttribute
+	domEffect
+	domLevel
+	domAttack
+	domDefence
+)
+
 // Card is parameter set for OCG Card.
 type Card struct {
 	Name      string
@@ -40,37 +53,24 @@ func init() {
 }
 
 func main() {
-	fmt.Println(search(url.QueryEscape("レッドアイズ"), lang)) // htmlをstringで取得
+	search(url.QueryEscape("レッドアイズ"), lang)
 }
 
-func search(keyword string, lang language) string {
+func search(keyword string, lang language) {
 	res, _ := http.Get(apiURL(keyword, lang))
 	defer res.Body.Close()
 
 	scn := bufio.NewScanner(res.Body)
 
-	var cardNameBlock bool
-	var cardSpecBlock bool
+	var s string
+	d := domNone
 	for scn.Scan() {
-		if strings.Contains(scn.Text(), "<dt class=\"box_card_name\">") {
-			cardNameBlock = true
-		}
-		if strings.Contains(scn.Text(), "</dt>") {
-			cardNameBlock = false
-		}
-		if strings.Contains(scn.Text(), "<dd class=\"box_card_spec\">") {
-			cardSpecBlock = true
-		}
-		if strings.Contains(scn.Text(), "</dd>") {
-			cardSpecBlock = false
-		}
+		s, d = readLine(scn.Text(), d)
 
-		if cardNameBlock || cardSpecBlock {
-			fmt.Println(scn.Text())
+		if len(s) > 0 && d != domNone {
+			fmt.Println(s)
 		}
 	}
-
-	return ""
 }
 
 func apiURL(keyword string, lang language) string {
@@ -78,4 +78,41 @@ func apiURL(keyword string, lang language) string {
 	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
 
 	return fmt.Sprintf("%s?%s", url, param)
+}
+
+func readLine(s string, d dom) (string, dom) {
+	s = strings.TrimSpace(s)
+	{
+		// card name
+		if strings.Contains(s, "<dt class=\"box_card_name\">") {
+			return "", domName
+		}
+
+		if d == domName && strings.HasPrefix(s, "<strong>") {
+			return strings.Trim(s, "<strong>"), d
+		}
+
+		if d == domName && strings.Contains(s, "</dt>") {
+			return "", domNone
+		}
+	}
+
+	{
+		// card spec
+		if strings.Contains(s, "<dd class=\"box_card_spec\">") {
+			return "", domSpec
+		}
+
+		if d == domSpec && strings.Contains(s, "</dd>") {
+			return "", domNone
+		}
+	}
+
+	/*
+		if d != domNone {
+			return s, d
+		}
+	*/
+
+	return "", d
 }
