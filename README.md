@@ -1,5 +1,10 @@
 # ygolinker
-Convert from card name to link text for YUGIOH card DB.
+Convert from card name to link text for Yu-Gi-Oh! CARD DATABASE.
+
+## Re
+```bash
+$ go get github.com/PuerkitoBio/goquery
+```
 
 ## Links
 * [Yu-Gi-Oh! CARD DATABASE](https://www.db.yugioh-card.com/yugiohdb/)

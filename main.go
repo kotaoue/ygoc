@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/kotaoue/ygolinker/packages/ocgdb"
@@ -13,5 +14,7 @@ func init() {
 }
 
 func main() {
-	ocgdb.Scraping(url.QueryEscape("レッドアイズ"), lang)
+	fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("ラグーン・オブ・レッドアイズ"), lang))
+	fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("ハリファイバー"), lang))
+	fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("リビングデッド"), lang))
 }
