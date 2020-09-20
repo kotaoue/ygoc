@@ -25,7 +25,7 @@ const (
 
 // Card is parameter set for YGO Card.
 type Card struct {
-	CardID    string
+	ID        string
 	Name      string
 	Limited   string
 	Attribute string
@@ -52,8 +52,7 @@ func Scraping(keyword string, lang Language) Card {
 
 	if l == 1 {
 		if v, ok := boxList.Children().Find("input.link_value").Attr("value"); ok {
-			c.CardID = ExtractCardID(v)
-			fmt.Println(c.CardID)
+			c.ID = ExtractCardID(v)
 		}
 		c.Name = boxList.Children().Find("dt.box_card_name > span.card_status > strong").Text()
 		if a, ok := boxList.Children().Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
