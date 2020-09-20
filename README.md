@@ -11,6 +11,7 @@ $ go get github.com/PuerkitoBio/goquery
 ```bash
 $ go run main.go -lang=en -name="Red-Eyes Darkness Metal Dragon"
 Red-Eyes Darkness Metal Dragon
+Limited
 DARK
 Level 10
 ATK 2800

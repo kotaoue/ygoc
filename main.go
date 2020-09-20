@@ -71,6 +71,9 @@ func selectCard(cardName string, lang ocgdb.Language) []string {
 	if len(c.Name) > 0 {
 		s = append(s, c.Name)
 	}
+	if len(c.Limited) > 0 {
+		s = append(s, c.Limited)
+	}
 	if len(c.Attribute) > 0 {
 		s = append(s, c.Attribute)
 	}
