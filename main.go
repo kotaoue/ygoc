@@ -83,8 +83,8 @@ func selectCard(cardName string, lang ocgdb.Language) []string {
 	if len(c.Level) > 0 {
 		s = append(s, c.Level)
 	}
-	if len(c.LinkMarker) > 0 {
-		s = append(s, c.LinkMarker)
+	if len(c.Link) > 0 {
+		s = append(s, c.Link)
 	}
 	if len(c.Attack) > 0 {
 		s = append(s, c.Attack)

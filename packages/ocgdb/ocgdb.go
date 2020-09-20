@@ -24,15 +24,15 @@ const (
 
 // Card is parameter set for OCG Card.
 type Card struct {
-	Name       string
-	Limited    string
-	Attribute  string
-	Effect     string
-	Level      string
-	LinkMarker string
-	Attack     string
-	Defence    string
-	Text       string
+	Name      string
+	Limited   string
+	Attribute string
+	Effect    string
+	Level     string
+	Link      string
+	Attack    string
+	Defence   string
+	Text      string
 }
 
 // Scraping from OCG DB.
@@ -56,7 +56,7 @@ func Scraping(keyword string, lang Language) Card {
 		c.Attribute = boxList.Children().Find("dd.box_card_spec > span.box_card_attribute > span").Text()
 		c.Effect = boxList.Children().Find("dd.box_card_spec > span.box_card_effect > span").Text()
 		c.Level = boxList.Children().Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
-		c.LinkMarker = boxList.Children().Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
+		c.Link = boxList.Children().Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
 		c.Attack = boxList.Children().Find("dd.box_card_spec > span.atk_power").Text()
 		c.Defence = boxList.Children().Find("dd.box_card_spec > span.def_power").Text()
 		c.Text = strings.TrimSpace(boxList.Children().Find("dd.box_card_text").Text())
