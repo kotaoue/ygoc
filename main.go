@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/kotaoue/ygolinker/packages/ocgdb"
+	"github.com/kotaoue/ygolinker/packages/ygodb"
 )
 
 var opt options
@@ -13,7 +13,7 @@ var opt options
 // options is flag for this code.
 type options struct {
 	executeMode mode
-	lang        ocgdb.Language
+	lang        ygodb.Language
 	cardName    string
 }
 
@@ -37,13 +37,13 @@ func help() {
 
 func init() {
 	m := flag.String("mode", string(modeSelect), "Specifies the behavior of this code.")
-	l := flag.String("lang", string(ocgdb.LangJA), "Language for selecting from the DB.")
+	l := flag.String("lang", string(ygodb.LangJA), "Language for selecting from the DB.")
 	c := flag.String("name", "", "The card name you want to select.")
 	flag.Parse()
 
 	opt = options{
 		executeMode: mode(*m),
-		lang:        ocgdb.Language(*l),
+		lang:        ygodb.Language(*l),
 		cardName:    *c,
 	}
 }
@@ -63,8 +63,8 @@ func main() {
 }
 
 // selectCard is scraping from DB with the specified card name.
-func selectCard(cardName string, lang ocgdb.Language) []string {
-	c := ocgdb.Scraping(url.QueryEscape(cardName), lang)
+func selectCard(cardName string, lang ygodb.Language) []string {
+	c := ygodb.Scraping(url.QueryEscape(cardName), lang)
 
 	var s []string
 

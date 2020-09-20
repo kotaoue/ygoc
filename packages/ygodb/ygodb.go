@@ -1,4 +1,4 @@
-package ocgdb
+package ygodb
 
 import (
 	"fmt"
@@ -8,10 +8,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// Language is supported language at OCG DB.
+// Language is supported language at YGO DB.
 type Language string
 
-// List of supported languages at OCG DB.
+// List of supported languages at YGO DB.
 const (
 	LangJA Language = "ja" // 日本語
 	LangEN          = "en" // English
@@ -23,7 +23,7 @@ const (
 	LangKO          = "ko" // 한글
 )
 
-// Card is parameter set for OCG Card.
+// Card is parameter set for YGO Card.
 type Card struct {
 	Name      string
 	Limited   string
@@ -36,7 +36,7 @@ type Card struct {
 	Text      string
 }
 
-// Scraping from OCG DB.
+// Scraping from YGO DB.
 func Scraping(keyword string, lang Language) Card {
 	c := Card{}
 
@@ -70,7 +70,7 @@ func Scraping(keyword string, lang Language) Card {
 	return c
 }
 
-// apiURL is search url for OCG DB.
+// apiURL is search url for YGO DB.
 func apiURL(keyword string, lang Language) string {
 	url := "https://www.db.yugioh-card.com/yugiohdb/card_search.action"
 	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
