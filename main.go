@@ -17,7 +17,7 @@ type options struct {
 	cardName    string
 }
 
-// Mode is a value that specifies the behavior of this code.
+// mode is a value that specifies the behavior of this code.
 type mode string
 
 // List of prepared mode.
@@ -51,11 +51,47 @@ func init() {
 func main() {
 	switch opt.executeMode {
 	case modeSelect:
-		fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape(opt.cardName), opt.lang))
+		for _, v := range selectCard(opt.cardName, opt.lang) {
+			fmt.Println(v)
+		}
 	case modeHelp:
 		help()
 	}
 	// fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("ドラグーン・オブ・レッドアイズ"), opt.Lang))
 	// fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("ハリファイバー"), opt.Lang))
 	// fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("リビングデッド"), opt.Lang))
+}
+
+// selectCard is scraping from DB with the specified card name.
+func selectCard(cardName string, lang ocgdb.Language) []string {
+	c := ocgdb.Scraping(url.QueryEscape(cardName), lang)
+
+	var s []string
+
+	if len(c.Name) > 0 {
+		s = append(s, c.Name)
+	}
+	if len(c.Attribute) > 0 {
+		s = append(s, c.Attribute)
+	}
+	if len(c.Effect) > 0 {
+		s = append(s, c.Effect)
+	}
+	if len(c.Level) > 0 {
+		s = append(s, c.Level)
+	}
+	if len(c.LinkMarker) > 0 {
+		s = append(s, c.LinkMarker)
+	}
+	if len(c.Attack) > 0 {
+		s = append(s, c.Attack)
+	}
+	if len(c.Defence) > 0 {
+		s = append(s, c.Defence)
+	}
+	if len(c.Text) > 0 {
+		s = append(s, c.Text)
+	}
+
+	return s
 }
