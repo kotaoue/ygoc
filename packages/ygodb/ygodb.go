@@ -74,12 +74,17 @@ func Scraping(keyword string, lang Language) Card {
 	return c
 }
 
+// siteURL is site url for YGO DB.
+func siteURL() string {
+	return "https://www.db.yugioh-card.com"
+}
+
 // apiURL is search url for YGO DB.
 func apiURL(keyword string, lang Language) string {
-	url := "https://www.db.yugioh-card.com/yugiohdb/card_search.action"
+	api := "/yugiohdb/card_search.action"
 	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
 
-	return fmt.Sprintf("%s?%s", url, param)
+	return fmt.Sprintf("%s%s?%s", siteURL(), api, param)
 }
 
 // ExtractCardID is extract cid from link text.
