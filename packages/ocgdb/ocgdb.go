@@ -69,6 +69,7 @@ func Scraping(keyword string, lang Language) Card {
 	return c
 }
 
+// apiURL is search url for OCG DB.
 func apiURL(keyword string, lang Language) string {
 	url := "https://www.db.yugioh-card.com/yugiohdb/card_search.action"
 	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
