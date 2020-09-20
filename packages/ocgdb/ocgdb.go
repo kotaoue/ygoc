@@ -2,6 +2,7 @@ package ocgdb
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -75,4 +76,14 @@ func apiURL(keyword string, lang Language) string {
 	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
 
 	return fmt.Sprintf("%s?%s", url, param)
+}
+
+// ExtractValue is extract value of number from string.
+//
+// Some parameter  can't be expressed as numbers.
+// For that reason returning as strings.
+// Example: Link Monster's deffence.
+func ExtractValue(s string) string {
+	reg := regexp.MustCompile(`\d+`)
+	return reg.FindString(s)
 }
