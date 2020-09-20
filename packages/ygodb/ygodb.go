@@ -25,6 +25,7 @@ const (
 
 // Card is parameter set for YGO Card.
 type Card struct {
+	CardID    string
 	Name      string
 	Limited   string
 	Attribute string
@@ -50,6 +51,10 @@ func Scraping(keyword string, lang Language) Card {
 	l := boxList.Children().Length()
 
 	if l == 1 {
+		if v, ok := boxList.Children().Find("input.link_value").Attr("value"); ok {
+			c.CardID = ExtractCardID(v)
+			fmt.Println(c.CardID)
+		}
 		c.Name = boxList.Children().Find("dt.box_card_name > span.card_status > strong").Text()
 		if a, ok := boxList.Children().Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
 			c.Limited = a
@@ -76,6 +81,17 @@ func apiURL(keyword string, lang Language) string {
 	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
 
 	return fmt.Sprintf("%s?%s", url, param)
+}
+
+// ExtractCardID is extract cid from link text.
+func ExtractCardID(s string) string {
+	reg := regexp.MustCompile(`cid=([\d]+)`)
+	r := reg.FindStringSubmatch(s)
+
+	if len(r) >= 2 {
+		return r[1]
+	}
+	return ""
 }
 
 // ExtractValue is extract value of number from string.
