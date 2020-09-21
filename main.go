@@ -54,6 +54,8 @@ func main() {
 		for _, v := range selectCard(opt.cardName, opt.lang) {
 			fmt.Println(v)
 		}
+	case modeLink:
+		fmt.Println(link(opt.cardName, opt.lang))
 	case modeHelp:
 		help()
 	}
@@ -97,4 +99,10 @@ func selectCard(cardName string, lang ygodb.Language) []string {
 	}
 
 	return s
+}
+
+// link is get card detail pages url.
+func link(cardName string, lang ygodb.Language) string {
+	c := ygodb.Scraping(url.QueryEscape(cardName), lang)
+	return c.URL()
 }

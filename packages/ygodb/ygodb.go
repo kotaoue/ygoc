@@ -37,6 +37,11 @@ type Card struct {
 	Text      string
 }
 
+// URL is card detail pages url.
+func (c Card) URL() string {
+	return fmt.Sprintf("%s/yugiohdb/card_search.action?ope=2&cid=%s", siteURL(), c.ID)
+}
+
 // Scraping from YGO DB.
 func Scraping(keyword string, lang Language) Card {
 	c := Card{}
