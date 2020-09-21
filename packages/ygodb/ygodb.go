@@ -2,6 +2,7 @@ package ygodb
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -44,6 +45,7 @@ func (c Card) URL() string {
 
 // Scraping from YGO DB.
 func Scraping(keyword string, lang Language) Card {
+	keyword = url.QueryEscape(keyword)
 	c := Card{}
 
 	doc, err := goquery.NewDocument(apiURL(keyword, lang))

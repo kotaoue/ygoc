@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/url"
 
 	"github.com/kotaoue/ygolinker/packages/ygodb"
 )
@@ -66,7 +65,7 @@ func main() {
 
 // selectCard is scraping from DB with the specified card name.
 func selectCard(cardName string, lang ygodb.Language) []string {
-	c := ygodb.Scraping(url.QueryEscape(cardName), lang)
+	c := ygodb.Scraping(cardName, lang)
 
 	var s []string
 
@@ -103,6 +102,6 @@ func selectCard(cardName string, lang ygodb.Language) []string {
 
 // link is get card detail pages url.
 func link(cardName string, lang ygodb.Language) string {
-	c := ygodb.Scraping(url.QueryEscape(cardName), lang)
+	c := ygodb.Scraping(cardName, lang)
 	return c.URL()
 }
