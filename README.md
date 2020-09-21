@@ -2,6 +2,8 @@
 The tool set for Yu-Gi-Oh! CARD.  
 Convert from card name to link text for Yu-Gi-Oh! CARD DATABASE.
 
+![build](https://github.com/kotaoue/ygoc/workflows/build/badge.svg)
+
 ## Requirement
 ```bash
 $ go get github.com/PuerkitoBio/goquery
