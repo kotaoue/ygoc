@@ -16,7 +16,7 @@ func Test_ExtractValue(t *testing.T) {
 
 	s = "DEF -"
 	r = ygodb.ExtractValue(s)
-	e = "-"
+	e = ""
 	if r != e {
 		t.Fatalf("when set %s, returned %s, expected %s", s, r, e)
 	}
