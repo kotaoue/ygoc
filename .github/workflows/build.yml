@@ -11,8 +11,10 @@ jobs:
         with:
           version: ^1.14
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+      - run: actions/checkout@v2
+
+      - name: Install goimports
+        run: go get golang.org/x/tools/cmd/goimports
 
       - run: gofmt -s -l .
       - run: goimports -l -format-only .
