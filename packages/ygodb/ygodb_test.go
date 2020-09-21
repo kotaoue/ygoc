@@ -15,6 +15,21 @@ func Test_Card_URL(t *testing.T) {
 	}
 }
 
+func Test_Scraping(t *testing.T) {
+	k := "Harpie's Feather Duster"
+	r := ygodb.Scraping("Harpie's Feather Duster", ygodb.LangEN)
+	e := ygodb.Card{
+		ID:        "4678",
+		Name:      "Harpie's Feather Duster",
+		Limited:   "Limited",
+		Attribute: "SPELL",
+		Text:      "Destroy all Spell and Trap Cards your opponent controls.",
+	}
+	if r != e {
+		t.Fatalf("when keyword %s\nreturned %#v\nexpected %#v", k, r, e)
+	}
+}
+
 func Test_ExtractValue(t *testing.T) {
 	s := "ATK 3000"
 	r := ygodb.ExtractValue(s)
