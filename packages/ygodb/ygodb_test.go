@@ -3,7 +3,7 @@ package ygodb_test
 import (
 	"testing"
 
-	"github.com/kotaoue/ygolinker/packages/ygodb"
+	"github.com/kotaoue/ygoc/packages/ygodb"
 )
 
 func Test_Card_URL(t *testing.T) {

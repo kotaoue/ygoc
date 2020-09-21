@@ -1,4 +1,4 @@
-module github.com/kotaoue/ygolinker
+module github.com/kotaoue/ygoc
 
 go 1.14
 

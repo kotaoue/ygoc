@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/kotaoue/ygolinker/packages/ygodb"
+	"github.com/kotaoue/ygoc/packages/ygodb"
 )
 
 var opt options
