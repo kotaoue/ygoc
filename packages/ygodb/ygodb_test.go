@@ -30,6 +30,22 @@ func Test_Scraping(t *testing.T) {
 	}
 }
 
+func Test_ExtractCardID(t *testing.T) {
+	s := "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=13049"
+	r := ygodb.ExtractCardID(s)
+	e := "13049"
+	if r != e {
+		t.Fatalf("when set %s, returned %s, expected %s", s, r, e)
+	}
+
+	s = "https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=Gouki+Suprex&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=2&request_locale=en"
+	r = ygodb.ExtractValue(s)
+	e = "1"
+	if r != e {
+		t.Fatalf("when set %s, returned %s, expected %s", s, r, e)
+	}
+}
+
 func Test_ExtractValue(t *testing.T) {
 	s := "ATK 3000"
 	r := ygodb.ExtractValue(s)
