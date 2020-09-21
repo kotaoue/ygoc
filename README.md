@@ -5,9 +5,10 @@ Convert from card name to link text for Yu-Gi-Oh! CARD DATABASE.
 [![build](https://github.com/kotaoue/ygoc/workflows/build/badge.svg)](https://github.com/kotaoue/ygoc/actions?query=workflow%3Abuild) [![Coverage Status](https://coveralls.io/repos/github/kotaoue/ygoc/badge.svg?branch=master)](https://coveralls.io/github/kotaoue/ygoc?branch=master)
 
 ## Requirement
-```bash
-$ go get github.com/PuerkitoBio/goquery
-```
+* [PuerkitoBio/goquery](https://github.com/PuerkitoBio/goquery)
+  ```bash
+  $ go get github.com/PuerkitoBio/goquery
+  ```
 
 ## Usage
 ### mode=select
