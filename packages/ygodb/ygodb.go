@@ -44,14 +44,13 @@ func (c Card) URL() string {
 }
 
 // Scraping from YGO DB.
-func Scraping(keyword string, lang Language) Card {
+func Scraping(keyword string, lang Language) (Card, error) {
 	keyword = url.QueryEscape(keyword)
 	c := Card{}
 
 	doc, err := goquery.NewDocument(apiURL(keyword, lang))
 	if err != nil {
-		fmt.Printf("%v", err)
-		return c
+		return c, err
 	}
 
 	boxList := doc.Find("div#article_body > table > tbody > tr > td > div.list_style > ul.box_list")
@@ -73,12 +72,12 @@ func Scraping(keyword string, lang Language) Card {
 		c.Defence = boxList.Children().Find("dd.box_card_spec > span.def_power").Text()
 		c.Text = strings.TrimSpace(boxList.Children().Find("dd.box_card_text").Text())
 	} else if l > 1 {
-		fmt.Println("Couldn't narrow down the cards to one.")
+		return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
 	} else {
-		fmt.Println("Card not found.")
+		return c, fmt.Errorf("Error: %s", "Card not found.")
 	}
 
-	return c
+	return c, nil
 }
 
 // siteURL is site url for YGO DB.

@@ -17,7 +17,7 @@ func Test_Card_URL(t *testing.T) {
 
 func Test_Scraping(t *testing.T) {
 	k := "Harpie's Feather Duster"
-	r := ygodb.Scraping("Harpie's Feather Duster", ygodb.LangEN)
+	r, err := ygodb.Scraping(k, ygodb.LangEN)
 	e := ygodb.Card{
 		ID:        "4678",
 		Name:      "Harpie's Feather Duster",
@@ -25,8 +25,31 @@ func Test_Scraping(t *testing.T) {
 		Attribute: "SPELL",
 		Text:      "Destroy all Spell and Trap Cards your opponent controls.",
 	}
+	if err != nil {
+		t.Fatalf("when keyword %s error occurred %s\n", k, err.Error())
+	}
 	if r != e {
 		t.Fatalf("when keyword %s\nreturned %#v\nexpected %#v", k, r, e)
+	}
+
+	k = "Red-Eyes"
+	r, err = ygodb.Scraping(k, ygodb.LangEN)
+	s := "Error: Couldn't narrow down the cards to one."
+	if err == nil {
+		t.Fatalf("when keyword %s error not occurred\n", k)
+	}
+	if err.Error() != s {
+		t.Fatalf("when keyword %s returned %s expected %s", k, err.Error(), s)
+	}
+
+	k = "Shivan Dragon"
+	r, err = ygodb.Scraping(k, ygodb.LangEN)
+	s = "Error: Card not found."
+	if err == nil {
+		t.Fatalf("when keyword %s error not occurred\n", k)
+	}
+	if err.Error() != s {
+		t.Fatalf("when keyword %s returned %s expected %s", k, err.Error(), s)
 	}
 }
 
