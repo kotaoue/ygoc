@@ -58,9 +58,6 @@ func main() {
 	case modeHelp:
 		help()
 	}
-	// fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("ドラグーン・オブ・レッドアイズ"), opt.Lang))
-	// fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("ハリファイバー"), opt.Lang))
-	// fmt.Printf("%v\n", ocgdb.Scraping(url.QueryEscape("リビングデッド"), opt.Lang))
 }
 
 // selectCard is scraping from DB with the specified card name.
