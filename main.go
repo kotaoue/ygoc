@@ -37,7 +37,7 @@ var modeMap = map[mode]modeDetail{
 	modeUnknown: {key: "unknown", description: "Unknown mode."},
 	modeHelp:    {key: "help", description: "Show selectable modes."},
 	modeSelect:  {key: "select", description: "Select from DB with the specified card name."},
-	modeLink:    {key: "insert", description: "Show card details url."},
+	modeLink:    {key: "link", description: "Show card details url."},
 }
 
 func (m mode) String() string {
