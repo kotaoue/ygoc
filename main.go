@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/kotaoue/ygoc/packages/ygodb"
 )
@@ -17,31 +18,64 @@ type options struct {
 }
 
 // mode is a value that specifies the behavior of this code.
-type mode string
+type mode int
 
 // List of prepared mode.
 const (
-	modeHelp   mode = "help"
-	modeSelect      = "select"
-	modeLink        = "link"
+	modeUnknown mode = iota
+	modeHelp
+	modeSelect
+	modeLink
 )
 
-// help is priting the mode options for this code.
-func help() {
-	fmt.Println("The execute modes of this code.")
-	fmt.Println("You specify any one to '-mode'.")
-	fmt.Printf("  -%s\n\tShow mode options.\n", modeHelp)
-	fmt.Printf("  -%s\n\tSelect from DB with the specified card name.\n", modeSelect)
+type modeDetail struct {
+	key         string
+	description string
+}
+
+var modeMap = map[mode]modeDetail{
+	modeUnknown: {key: "unknown", description: "Unknown mode."},
+	modeHelp:    {key: "help", description: "Show selectable modes."},
+	modeSelect:  {key: "select", description: "Select from DB with the specified card name."},
+	modeLink:    {key: "insert", description: "Show card details url."},
+}
+
+func (m mode) String() string {
+	if m, ok := modeMap[m]; ok {
+		return m.key
+	}
+	return ""
+}
+
+// modes is returns all valid values ​​excluded 'Unknown'.
+func modes() []string {
+	var s []string
+	for _, v := range modeMap {
+		if !strings.EqualFold(v.key, fmt.Sprint(modeUnknown)) {
+			s = append(s, v.key)
+		}
+	}
+	return s
+}
+
+// atoMode is convert from string to mode.
+func atoMode(s string) mode {
+	for k, v := range modeMap {
+		if strings.EqualFold(v.key, s) {
+			return k
+		}
+	}
+	return modeUnknown
 }
 
 func init() {
-	m := flag.String("mode", string(modeSelect), "Specifies the behavior of this code.")
+	m := flag.String("mode", fmt.Sprint(modeSelect), fmt.Sprintf("Specifies the behavior of this code. [%s]", strings.Join(modes(), "|")))
 	l := flag.String("lang", string(ygodb.LangJA), "Language for selecting from the DB.")
 	c := flag.String("name", "", "The card name you want to select.")
 	flag.Parse()
 
 	opt = options{
-		executeMode: mode(*m),
+		executeMode: atoMode(*m),
 		lang:        ygodb.Language(*l),
 		cardName:    *c,
 	}
@@ -101,4 +135,13 @@ func selectCard(cardName string, lang ygodb.Language) []string {
 func link(cardName string, lang ygodb.Language) string {
 	c, _ := ygodb.Scraping(cardName, lang)
 	return c.URL()
+}
+
+// help is priting the mode options for this code.
+func help() {
+	fmt.Println("The execute modes of this code.")
+	fmt.Println("You specify any one to '-mode'.")
+	for _, v := range modeMap {
+		fmt.Printf("  -%s\n\t%s\n", v.key, v.description)
+	}
 }
