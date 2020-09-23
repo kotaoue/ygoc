@@ -23,6 +23,29 @@ DEF 2400
 You can Special Summon this card (from your hand) by banishing 1 face-up Dragon monster you control. You can only Special Summon "Red-Eyes Darkness Metal Dragon" once per turn this way. During your Main Phase: You can Special Summon 1 Dragon monster from your hand or GY, except "Red-Eyes Darkness Metal Dragon". You can only use this effect of "Red-Eyes Darkness Metal Dragon" once per turn.
 ```
 
+### mode=markdown
+#### before
+```bash
+$ cat wishlist.md 
+# wishlist.md
+My wishlist for new deck.
+
+* Masquerena
+* Crusadia Avramax
+* Ash Blossom
+```
+
+#### after
+```bash
+$ go run main.go -mode=markdown -lang=en -file="wishlist.md"
+# wishlist.md
+My wishlist for new deck.
+
+* [I:P Masquerena](https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=14676)
+* [Mekk-Knight Crusadia Avramax](https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=14297)
+* [Ash Blossom & Joyous Spring](https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=12950)
+```
+
 ### mode=link
 ```bash
 $ go run main.go -mode=link -lang=en -name="Utopic ZEXAL"

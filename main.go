@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/kotaoue/ygoc/packages/md"
 	"github.com/kotaoue/ygoc/packages/ygodb"
 )
 
@@ -15,6 +18,7 @@ type options struct {
 	executeMode mode
 	lang        ygodb.Language
 	cardName    string
+	file        string
 }
 
 // mode is a value that specifies the behavior of this code.
@@ -26,18 +30,21 @@ const (
 	modeHelp
 	modeSelect
 	modeLink
+	modeMarkDown
 )
 
+var modeMap = map[mode]modeDetail{
+	modeUnknown:  {key: "unknown", description: "Unknown mode."},
+	modeHelp:     {key: "help", description: "Show selectable modes."},
+	modeSelect:   {key: "select", description: "Select from DB with the specified card name."},
+	modeLink:     {key: "link", description: "Show card details url."},
+	modeMarkDown: {key: "markdown", description: "Load markdown and add link to card detail. Required: '-file'"},
+}
+
+// modeDetail is combination of key and description.
 type modeDetail struct {
 	key         string
 	description string
-}
-
-var modeMap = map[mode]modeDetail{
-	modeUnknown: {key: "unknown", description: "Unknown mode."},
-	modeHelp:    {key: "help", description: "Show selectable modes."},
-	modeSelect:  {key: "select", description: "Select from DB with the specified card name."},
-	modeLink:    {key: "link", description: "Show card details url."},
 }
 
 func (m mode) String() string {
@@ -72,12 +79,14 @@ func init() {
 	m := flag.String("mode", fmt.Sprint(modeSelect), fmt.Sprintf("Specifies the behavior of this code. [%s]", strings.Join(modes(), "|")))
 	l := flag.String("lang", string(ygodb.LangJA), "Language for selecting from the DB.")
 	c := flag.String("name", "", "The card name you want to select.")
+	f := flag.String("file", "", "File path of markdown. Required: '-mode=markdown'")
 	flag.Parse()
 
 	opt = options{
 		executeMode: atoMode(*m),
 		lang:        ygodb.Language(*l),
 		cardName:    *c,
+		file:        *f,
 	}
 }
 
@@ -89,6 +98,10 @@ func main() {
 		}
 	case modeLink:
 		fmt.Println(link(opt.cardName, opt.lang))
+	case modeMarkDown:
+		for _, v := range prettyList(opt.file, opt.lang) {
+			fmt.Println(v)
+		}
 	case modeHelp:
 		help()
 	}
@@ -135,6 +148,36 @@ func selectCard(cardName string, lang ygodb.Language) []string {
 func link(cardName string, lang ygodb.Language) string {
 	c, _ := ygodb.Scraping(cardName, lang)
 	return c.URL()
+}
+
+// linkMD is get card detail pages url and printing by markdown.
+func linkMD(cardName string, lang ygodb.Language) string {
+	c, _ := ygodb.Scraping(cardName, lang)
+	return fmt.Sprintf("[%s](%s)", c.Name, c.URL())
+}
+
+// prettyList is load markdown and add link to card detail.
+func prettyList(fileName string, lang ygodb.Language) []string {
+	var s []string
+
+	fp, err := os.Open(fileName)
+	if err != nil {
+		return s
+	}
+	defer fp.Close()
+
+	scn := bufio.NewScanner(fp)
+	for scn.Scan() {
+		if md.IsList(scn.Text()) {
+			k := md.ListText(scn.Text())
+			m := linkMD(k, lang)
+			s = append(s, strings.Replace(scn.Text(), k, m, 1))
+		} else {
+			s = append(s, fmt.Sprintf(scn.Text()))
+		}
+	}
+
+	return s
 }
 
 // help is priting the mode options for this code.
