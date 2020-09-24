@@ -150,9 +150,8 @@ func link(cardName string, lang ygodb.Language) string {
 	return c.URL()
 }
 
-// linkMD is get card detail pages url and printing by markdown.
-func linkMD(cardName string, lang ygodb.Language) string {
-	c, _ := ygodb.Scraping(cardName, lang)
+// linkMD is printing card detail pages url by markdown.
+func linkMD(c ygodb.Card) string {
 	return fmt.Sprintf("[%s](%s)", c.Name, c.URL())
 }
 
@@ -168,16 +167,25 @@ func prettyList(fileName string, lang ygodb.Language) []string {
 
 	scn := bufio.NewScanner(fp)
 	for scn.Scan() {
-		if md.IsList(scn.Text()) && !md.IsLink(scn.Text()) {
+		v := fmt.Sprintf(scn.Text())
+		if isPrettyTarget(scn.Text()) {
 			k := md.ListText(scn.Text())
-			m := linkMD(k, lang)
-			s = append(s, strings.Replace(scn.Text(), k, m, 1))
-		} else {
-			s = append(s, fmt.Sprintf(scn.Text()))
+			c, err := ygodb.Scraping(k, lang)
+
+			if err == nil {
+				m := linkMD(c)
+				v = strings.Replace(scn.Text(), k, m, 1)
+			}
 		}
+		s = append(s, v)
 	}
 
 	return s
+}
+
+// isPrettyTarget is check if the string is to be converted.
+func isPrettyTarget(s string) bool {
+	return md.IsList(s) && !md.IsLink(s)
 }
 
 // help is priting the mode options for this code.
