@@ -168,7 +168,7 @@ func prettyList(fileName string, lang ygodb.Language) []string {
 
 	scn := bufio.NewScanner(fp)
 	for scn.Scan() {
-		if md.IsList(scn.Text()) {
+		if md.IsList(scn.Text()) && !md.IsLink(scn.Text()) {
 			k := md.ListText(scn.Text())
 			m := linkMD(k, lang)
 			s = append(s, strings.Replace(scn.Text(), k, m, 1))
