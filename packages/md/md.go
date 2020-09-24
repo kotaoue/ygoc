@@ -2,6 +2,7 @@ package md
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -23,6 +24,13 @@ func IsList(s string) bool {
 	}
 
 	return false
+}
+
+// IsLink is determine if the string is a link.
+func IsLink(s string) bool {
+	s = strings.TrimSpace(s)
+	r := regexp.MustCompile(`\[.*\]\(http.*\)`)
+	return r.MatchString(s)
 }
 
 // ListText is extract a string from the list.
