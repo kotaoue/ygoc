@@ -1,6 +1,8 @@
 # ygoc
 The tool set for Yu-Gi-Oh! CARD.  
 
+English|[Japanese](README_JP.md)
+
 [![build](https://github.com/kotaoue/ygoc/workflows/build/badge.svg)](https://github.com/kotaoue/ygoc/actions?query=workflow%3Abuild)
 [![Coverage Status](https://coveralls.io/repos/github/kotaoue/ygoc/badge.svg?branch=master)](https://coveralls.io/github/kotaoue/ygoc?branch=master)
 [![CodeScanning](https://github.com/kotaoue/ygoc/workflows/CodeScanning/badge.svg)](https://github.com/kotaoue/ygoc/actions?query=workflow%3ACodeScanning)
