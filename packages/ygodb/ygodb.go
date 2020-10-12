@@ -57,27 +57,44 @@ func Scraping(keyword string, lang Language) (Card, error) {
 	l := boxList.Children().Length()
 
 	if l == 1 {
-		if v, ok := boxList.Children().Find("input.link_value").Attr("value"); ok {
-			c.ID = ExtractCardID(v)
-		}
-		c.Name = boxList.Children().Find("dt.box_card_name > span.card_status > strong").Text()
-		if a, ok := boxList.Children().Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
-			c.Limited = a
-		}
-		c.Attribute = boxList.Children().Find("dd.box_card_spec > span.box_card_attribute > span").Text()
-		c.Effect = boxList.Children().Find("dd.box_card_spec > span.box_card_effect > span").Text()
-		c.Level = boxList.Children().Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
-		c.Link = boxList.Children().Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
-		c.Attack = boxList.Children().Find("dd.box_card_spec > span.atk_power").Text()
-		c.Defence = boxList.Children().Find("dd.box_card_spec > span.def_power").Text()
-		c.Text = strings.TrimSpace(boxList.Children().Find("dd.box_card_text").Text())
+		c = scrapingCard(boxList.Children())
 	} else if l > 1 {
-		return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
+		boxList.Children().Each(func(index int, s *goquery.Selection) {
+			if strings.EqualFold(keyword, s.Find("dt.box_card_name > span.card_status > strong").Text()) {
+				c = scrapingCard(s)
+			}
+		})
+
+		if len(c.ID) == 0 {
+			return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
+		}
 	} else {
 		return c, fmt.Errorf("Error: %s", "Card not found.")
 	}
 
 	return c, nil
+}
+
+// scrapingCard is scraping card detail.
+func scrapingCard(s *goquery.Selection) Card {
+	c := Card{}
+
+	if v, ok := s.Find("input.link_value").Attr("value"); ok {
+		c.ID = ExtractCardID(v)
+	}
+	c.Name = s.Find("dt.box_card_name > span.card_status > strong").Text()
+	if a, ok := s.Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
+		c.Limited = a
+	}
+	c.Attribute = s.Find("dd.box_card_spec > span.box_card_attribute > span").Text()
+	c.Effect = s.Find("dd.box_card_spec > span.box_card_effect > span").Text()
+	c.Level = s.Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
+	c.Link = s.Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
+	c.Attack = s.Find("dd.box_card_spec > span.atk_power").Text()
+	c.Defence = s.Find("dd.box_card_spec > span.def_power").Text()
+	c.Text = strings.TrimSpace(s.Find("dd.box_card_text").Text())
+
+	return c
 }
 
 // siteURL is site url for YGO DB.

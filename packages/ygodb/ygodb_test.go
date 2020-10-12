@@ -32,6 +32,22 @@ func Test_Scraping(t *testing.T) {
 		t.Fatalf("when keyword %s\nreturned %#v\nexpected %#v", k, r, e)
 	}
 
+	k = "Raigeki"
+	r, err = ygodb.Scraping(k, ygodb.LangEN)
+	e = ygodb.Card{
+		ID:        "4343",
+		Name:      "Raigeki",
+		Limited:   "Limited",
+		Attribute: "SPELL",
+		Text:      "Destroy all monsters your opponent controls.",
+	}
+	if err != nil {
+		t.Fatalf("when keyword %s error occurred %s\n", k, err.Error())
+	}
+	if r != e {
+		t.Fatalf("when keyword %s\nreturned %#v\nexpected %#v", k, r, e)
+	}
+
 	k = "Red-Eyes"
 	r, err = ygodb.Scraping(k, ygodb.LangEN)
 	s := "Error: Couldn't narrow down the cards to one."
