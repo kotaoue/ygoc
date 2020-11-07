@@ -31,6 +31,7 @@ const (
 	modeSelect
 	modeLink
 	modeMarkDown
+	modeMulligan
 )
 
 var modeMap = map[mode]modeDetail{
@@ -39,6 +40,7 @@ var modeMap = map[mode]modeDetail{
 	modeSelect:   {key: "select", description: "Select from DB with the specified card name."},
 	modeLink:     {key: "link", description: "Show card details url."},
 	modeMarkDown: {key: "markdown", description: "Load markdown and add link to card detail. Required: '-file'"},
+	modeMulligan: {key: "mulligan", description: "Calculate the odds of getting the necessary card for your first hand. Required: '-file'"},
 }
 
 // modeDetail is combination of key and description.
@@ -79,7 +81,7 @@ func init() {
 	m := flag.String("mode", fmt.Sprint(modeSelect), fmt.Sprintf("Specifies the behavior of this code. [%s]", strings.Join(modes(), "|")))
 	l := flag.String("lang", string(ygodb.LangJA), "Language for selecting from the DB.")
 	c := flag.String("name", "", "The card name you want to select.")
-	f := flag.String("file", "", "File path of markdown. Required: '-mode=markdown'")
+	f := flag.String("file", "", "File path of markdown. Required: '-mode=markdown or mulligan'")
 	flag.Parse()
 
 	opt = options{
