@@ -53,7 +53,7 @@ func Test_Scraping(t *testing.T) {
 
 	k = "Red-Eyes"
 	r, err = ygodb.Scraping(k, ygodb.LangEN)
-	s := "Error: Couldn't narrow down the cards to one."
+	expectedError := "Error: Couldn't narrow down the cards to one."
 	if err == nil {
 		t.Logf("Expected error for keyword %s but got none. API may have changed.", k)
 	} else if err.Error() != expectedError {
