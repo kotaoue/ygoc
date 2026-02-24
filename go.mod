@@ -1,6 +1,6 @@
 module github.com/kotaoue/ygoc
 
-go 1.24
+go 1.26
 
 require github.com/PuerkitoBio/goquery v1.5.1
 
