@@ -167,7 +167,7 @@ func prettyList(fileName string, lang ygodb.Language) []string {
 
 	scn := bufio.NewScanner(fp)
 	for scn.Scan() {
-		v := fmt.Sprintf(scn.Text())
+		v := scn.Text()
 		if isPrettyTarget(scn.Text()) {
 			k := md.ListText(scn.Text())
 			c, err := ygodb.Scraping(k, lang)
