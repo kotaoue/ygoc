@@ -1,4 +1,5 @@
 # ygoc
+
 The tool set for Yu-Gi-Oh! CARD.  
 
 English|[Japanese](README_JP.md)
@@ -8,13 +9,17 @@ English|[Japanese](README_JP.md)
 [![CodeScanning](https://github.com/kotaoue/ygoc/workflows/CodeScanning/badge.svg)](https://github.com/kotaoue/ygoc/actions?query=workflow%3ACodeScanning)
 
 ## Requirement
+
 * [PuerkitoBio/goquery](https://github.com/PuerkitoBio/goquery)
+
   ```bash
-  $ go get github.com/PuerkitoBio/goquery
+  go get github.com/PuerkitoBio/goquery
   ```
 
 ## Usage
+
 ### mode=select
+
 ```bash
 $ go run main.go -lang=en -name="Red-Eyes Darkness Metal Dragon"
 Red-Eyes Darkness Metal Dragon
@@ -27,7 +32,9 @@ You can Special Summon this card (from your hand) by banishing 1 face-up Dragon 
 ```
 
 ### mode=markdown
+
 #### before
+
 ```bash
 $ cat wishlist.md 
 # wishlist.md
@@ -39,6 +46,7 @@ My wishlist for new deck.
 ```
 
 #### after
+
 ```bash
 $ go run main.go -mode=markdown -lang=en -file="wishlist.md"
 # wishlist.md
@@ -50,11 +58,13 @@ My wishlist for new deck.
 ```
 
 ### mode=link
+
 ```bash
 $ go run main.go -mode=link -lang=en -name="Utopic ZEXAL"
 https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=11932
 ```
 
 ## Links
+
 * [Yu-Gi-Oh! CARD DATABASE](https://www.db.yugioh-card.com/yugiohdb/)
 * [Yu-Gi-Oh! Official Twitter](https://twitter.com/yugioh_ocg_info)

@@ -1,4 +1,5 @@
 # ygoc
+
 遊戯王カード用ツールセット。
 
 [English](README.md)|Japanese
@@ -8,13 +9,17 @@
 [![CodeScanning](https://github.com/kotaoue/ygoc/workflows/CodeScanning/badge.svg)](https://github.com/kotaoue/ygoc/actions?query=workflow%3ACodeScanning)
 
 ## 要件
+
 * [PuerkitoBio/goquery](https://github.com/PuerkitoBio/goquery)
+
   ```bash
-  $ go get github.com/PuerkitoBio/goquery
+  go get github.com/PuerkitoBio/goquery
   ```
 
 ## 使用方法
+
 ### mode=select
+
 ```bash
 $ go run main.go -lang=ja -name="レッドアイズダークネスメタルドラゴン"
 レッドアイズ・ダークネスメタルドラゴン
@@ -27,7 +32,9 @@ $ go run main.go -lang=ja -name="レッドアイズダークネスメタルド�
 ```
 
 ### mode=markdown
+
 #### before
+
 ```bash
 $ cat wishlist.md 
 # wishlist.md
@@ -39,6 +46,7 @@ $ cat wishlist.md
 ```
 
 #### after
+
 ```bash
 $ go run main.go -mode=markdown -lang=ja -file="wishlist.md"
 # wishlist.md
@@ -50,11 +58,13 @@ $ go run main.go -mode=markdown -lang=ja -file="wishlist.md"
 ```
 
 ### mode=link
+
 ```bash
 $ go run main.go -mode=link -lang=ja -name="ホープゼアル"
 https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=11932
 ```
 
 ## Links
+
 * [Yu-Gi-Oh! CARD DATABASE](https://www.db.yugioh-card.com/yugiohdb/)
 * [Yu-Gi-Oh! Official Twitter](https://twitter.com/yugioh_ocg_info)
