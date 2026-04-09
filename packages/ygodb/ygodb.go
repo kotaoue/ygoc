@@ -1,13 +1,13 @@
 package ygodb
 
 import (
-"fmt"
-"net/url"
-"regexp"
-"strings"
-"os"
+	"fmt"
+	"net/url"
+	"os"
+	"regexp"
+	"strings"
 
-"github.com/PuerkitoBio/goquery"
+	"github.com/PuerkitoBio/goquery"
 )
 
 // Language is supported language at YGO DB.
@@ -15,137 +15,139 @@ type Language string
 
 // List of supported languages at YGO DB.
 const (
-LangJA Language = "ja" // 日本語
-LangEN          = "en" // English
-LangDE          = "de" // Deutsch
-LangFR          = "fr" // Français
-LangIT          = "it" // Italiano
-LangES          = "es" // Español
-LangPT          = "pt" // Portugues
-LangKO          = "ko" // 한글
+	LangJA Language = "ja" // 日本語
+	LangEN          = "en" // English
+	LangDE          = "de" // Deutsch
+	LangFR          = "fr" // Français
+	LangIT          = "it" // Italiano
+	LangES          = "es" // Español
+	LangPT          = "pt" // Portugues
+	LangKO          = "ko" // 한글
 )
 
 // Card is parameter set for YGO Card.
 type Card struct {
-ID        string
-Name      string
-Limited   string
-Attribute string
-Effect    string
-Level     string
-Link      string
-Attack    string
-Defence   string
-Text      string
+	ID        string
+	Name      string
+	Limited   string
+	Attribute string
+	Effect    string
+	Level     string
+	Link      string
+	Attack    string
+	Defence   string
+	Text      string
 }
 
 // URL is card detail pages url.
 func (c Card) URL() string {
-return fmt.Sprintf("%s/yugiohdb/card_search.action?ope=2&cid=%s", siteURL(), c.ID)
+	return fmt.Sprintf("%s/yugiohdb/card_search.action?ope=2&cid=%s", siteURL(), c.ID)
 }
 
 // Scraping from YGO DB.
 func Scraping(keyword string, lang Language) (Card, error) {
-keyword = url.QueryEscape(keyword)
-c := Card{}
+	keyword = url.QueryEscape(keyword)
+	c := Card{}
 
-doc, err := goquery.NewDocument(apiURL(keyword, lang))
-if err != nil {
-return c, err
-}
+	doc, err := goquery.NewDocument(apiURL(keyword, lang))
+	if err != nil {
+		return c, err
+	}
 
-// Debug: print full HTML to stderr
-if os.Getenv("YGOC_DEBUG") != "" {
-html, _ := doc.Html()
-fmt.Fprintln(os.Stderr, "=== DEBUG HTML ===")
-fmt.Fprintln(os.Stderr, html[:min(len(html), 10000)])
-fmt.Fprintln(os.Stderr, "=== END DEBUG ===")
-}
+	// Debug: print full HTML to stderr
+	if os.Getenv("YGOC_DEBUG") != "" {
+		html, _ := doc.Html()
+		fmt.Fprintln(os.Stderr, "=== DEBUG HTML ===")
+		fmt.Fprintln(os.Stderr, html[:min(len(html), 10000)])
+		fmt.Fprintln(os.Stderr, "=== END DEBUG ===")
+	}
 
-boxList := doc.Find("div#article_body > table > tbody > tr > td > div.list_style > ul.box_list")
-l := boxList.Children().Length()
+	boxList := doc.Find("div#article_body > table > tbody > tr > td > div.list_style > ul.box_list")
+	l := boxList.Children().Length()
 
-fmt.Fprintf(os.Stderr, "DEBUG: boxList children: %d\n", l)
+	fmt.Fprintf(os.Stderr, "DEBUG: boxList children: %d\n", l)
 
-// Also try other selectors
-fmt.Fprintf(os.Stderr, "DEBUG: ul.box_list: %d\n", doc.Find("ul.box_list").Length())
-fmt.Fprintf(os.Stderr, "DEBUG: input.link_value: %d\n", doc.Find("input.link_value").Length())
+	// Also try other selectors
+	fmt.Fprintf(os.Stderr, "DEBUG: ul.box_list: %d\n", doc.Find("ul.box_list").Length())
+	fmt.Fprintf(os.Stderr, "DEBUG: input.link_value: %d\n", doc.Find("input.link_value").Length())
 
-if l == 1 {
-c = scrapingCard(boxList.Children())
-} else if l > 1 {
-boxList.Children().Each(func(index int, s *goquery.Selection) {
-if strings.EqualFold(keyword, s.Find("dt.box_card_name > span.card_status > strong").Text()) {
-c = scrapingCard(s)
-}
-})
+	if l == 1 {
+		c = scrapingCard(boxList.Children())
+	} else if l > 1 {
+		boxList.Children().Each(func(index int, s *goquery.Selection) {
+			if strings.EqualFold(keyword, s.Find("dt.box_card_name > span.card_status > strong").Text()) {
+				c = scrapingCard(s)
+			}
+		})
 
-if len(c.ID) == 0 {
-return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
-}
-} else {
-return c, fmt.Errorf("Error: %s", "Card not found.")
-}
+		if len(c.ID) == 0 {
+			return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
+		}
+	} else {
+		return c, fmt.Errorf("Error: %s", "Card not found.")
+	}
 
-return c, nil
+	return c, nil
 }
 
 // scrapingCard is scraping card detail.
 func scrapingCard(s *goquery.Selection) Card {
-c := Card{}
+	c := Card{}
 
-if v, ok := s.Find("input.link_value").Attr("value"); ok {
-fmt.Fprintf(os.Stderr, "DEBUG: link_value: %q\n", v)
-c.ID = ExtractCardID(v)
-}
-c.Name = s.Find("dt.box_card_name > span.card_status > strong").Text()
-if a, ok := s.Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
-c.Limited = a
-}
-c.Attribute = s.Find("dd.box_card_spec > span.box_card_attribute > span").Text()
-c.Effect = s.Find("dd.box_card_spec > span.box_card_effect > span").Text()
-c.Level = s.Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
-c.Link = s.Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
-c.Attack = s.Find("dd.box_card_spec > span.atk_power").Text()
-c.Defence = s.Find("dd.box_card_spec > span.def_power").Text()
-c.Text = strings.TrimSpace(s.Find("dd.box_card_text").Text())
+	if v, ok := s.Find("input.link_value").Attr("value"); ok {
+		fmt.Fprintf(os.Stderr, "DEBUG: link_value: %q\n", v)
+		c.ID = ExtractCardID(v)
+	}
+	c.Name = s.Find("dt.box_card_name > span.card_status > strong").Text()
+	if a, ok := s.Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
+		c.Limited = a
+	}
+	c.Attribute = s.Find("dd.box_card_spec > span.box_card_attribute > span").Text()
+	c.Effect = s.Find("dd.box_card_spec > span.box_card_effect > span").Text()
+	c.Level = s.Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
+	c.Link = s.Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
+	c.Attack = s.Find("dd.box_card_spec > span.atk_power").Text()
+	c.Defence = s.Find("dd.box_card_spec > span.def_power").Text()
+	c.Text = strings.TrimSpace(s.Find("dd.box_card_text").Text())
 
-fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q\n", c.ID, c.Name, c.Attribute)
+	fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q\n", c.ID, c.Name, c.Attribute)
 
-return c
+	return c
 }
 
 // siteURL is site url for YGO DB.
 func siteURL() string {
-return "https://www.db.yugioh-card.com"
+	return "https://www.db.yugioh-card.com"
 }
 
 // apiURL is search url for YGO DB.
 func apiURL(keyword string, lang Language) string {
-api := "/yugiohdb/card_search.action"
-param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
+	api := "/yugiohdb/card_search.action"
+	param := fmt.Sprintf("ope=1&sess=1&keyword=%s&stype=1&ctype=&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&othercon=1&request_locale=%s", keyword, lang)
 
-return fmt.Sprintf("%s%s?%s", siteURL(), api, param)
+	return fmt.Sprintf("%s%s?%s", siteURL(), api, param)
 }
 
 // ExtractCardID is extract cid from link text.
 func ExtractCardID(s string) string {
-reg := regexp.MustCompile(`cid=([\d]+)`)
-r := reg.FindStringSubmatch(s)
+	reg := regexp.MustCompile(`cid=([\d]+)`)
+	r := reg.FindStringSubmatch(s)
 
-if len(r) >= 2 {
-return r[1]
-}
-return ""
+	if len(r) >= 2 {
+		return r[1]
+	}
+	return ""
 }
 
 // ExtractValue is extract value of number from string.
 func ExtractValue(s string) string {
-reg := regexp.MustCompile(`\d+`)
-return reg.FindString(s)
+	reg := regexp.MustCompile(`\d+`)
+	return reg.FindString(s)
 }
 
 func min(a, b int) int {
-if a < b { return a }
-return b
+	if a < b {
+		return a
+	}
+	return b
 }
