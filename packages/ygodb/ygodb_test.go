@@ -20,11 +20,16 @@ func Test_Scraping(t *testing.T) {
 	k := "Blue-Eyes White Dragon"
 	r, err := ygodb.Scraping(k, ygodb.LangEN)
 	e := ygodb.Card{
-		ID:        "4678",
-		Name:      "Harpie's Feather Duster",
-		Limited:   "Limited",
-		Attribute: "SPELL",
-		Text:      "Destroy all Spell and Trap Cards your opponent controls.",
+		ID:        "4007",
+		Name:      "Blue-Eyes White Dragon",
+		Limited:   "",
+		Attribute: "LIGHT",
+		Effect:    "",
+		Level:     "Level 8",
+		Link:      "",
+		Attack:    "ATK 3000",
+		Defence:   "DEF 2500",
+		Text:      "This legendary dragon is a powerful engine of destruction. Virtually invincible, very few have faced this awesome creature and lived to tell the tale.",
 	}
 	// FIXME: Revert to t.Fatalf once the external API becomes stable.
 	if err != nil {
