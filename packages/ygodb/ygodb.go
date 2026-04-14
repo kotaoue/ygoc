@@ -62,29 +62,42 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		fmt.Fprintln(os.Stderr, "=== END DEBUG ===")
 	}
 
-	boxList := doc.Find("div#article_body > table > tbody > tr > td > div.list_style > ul.box_list")
-	l := boxList.Children().Length()
+	// New HTML structure: cards are in div.t_row.c_normal
+	cardRows := doc.Find("div#article_body div.t_row.c_normal")
+	l := cardRows.Length()
 
-	fmt.Fprintf(os.Stderr, "DEBUG: boxList children: %d\n", l)
+	fmt.Fprintf(os.Stderr, "DEBUG: card rows found: %d\n", l)
 
-	// Also try other selectors
-	fmt.Fprintf(os.Stderr, "DEBUG: ul.box_list: %d\n", doc.Find("ul.box_list").Length())
-	fmt.Fprintf(os.Stderr, "DEBUG: input.link_value: %d\n", doc.Find("input.link_value").Length())
+	if l == 0 {
+		return c, fmt.Errorf("Error: %s", "Card not found.")
+	}
 
 	if l == 1 {
-		c = scrapingCard(boxList.Children())
+		c = scrapingCard(cardRows.First())
 	} else if l > 1 {
-		boxList.Children().Each(func(index int, s *goquery.Selection) {
-			if strings.EqualFold(keyword, s.Find("dt.box_card_name > span.card_status > strong").Text()) {
-				c = scrapingCard(s)
+		// Multiple cards found, try to match by name
+		// URL decode the keyword for comparison
+		keywordDecoded, _ := url.QueryUnescape(keyword)
+		keywordLower := strings.ToLower(keywordDecoded)
+		
+		cardRows.Each(func(index int, s *goquery.Selection) {
+			cardName := strings.ToLower(s.Find("span.card_name").Text())
+			cardName = strings.TrimSpace(cardName)
+			fmt.Fprintf(os.Stderr, "DEBUG: comparing %q with %q\n", keywordLower, cardName)
+			
+			if strings.Contains(cardName, keywordLower) || strings.EqualFold(keywordLower, cardName) {
+				if len(c.ID) == 0 {
+					c = scrapingCard(s)
+					fmt.Fprintf(os.Stderr, "DEBUG: matched card: %q\n", cardName)
+				}
 			}
 		})
 
 		if len(c.ID) == 0 {
-			return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
+			// If exact match failed, return the first card
+			fmt.Fprintf(os.Stderr, "DEBUG: no exact match, using first card\n")
+			c = scrapingCard(cardRows.First())
 		}
-	} else {
-		return c, fmt.Errorf("Error: %s", "Card not found.")
 	}
 
 	return c, nil
@@ -94,23 +107,59 @@ func Scraping(keyword string, lang Language) (Card, error) {
 func scrapingCard(s *goquery.Selection) Card {
 	c := Card{}
 
+	// Extract card ID from link_value input
 	if v, ok := s.Find("input.link_value").Attr("value"); ok {
 		fmt.Fprintf(os.Stderr, "DEBUG: link_value: %q\n", v)
 		c.ID = ExtractCardID(v)
 	}
-	c.Name = s.Find("dt.box_card_name > span.card_status > strong").Text()
-	if a, ok := s.Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
-		c.Limited = a
-	}
-	c.Attribute = s.Find("dd.box_card_spec > span.box_card_attribute > span").Text()
-	c.Effect = s.Find("dd.box_card_spec > span.box_card_effect > span").Text()
-	c.Level = s.Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
-	c.Link = s.Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
-	c.Attack = s.Find("dd.box_card_spec > span.atk_power").Text()
-	c.Defence = s.Find("dd.box_card_spec > span.def_power").Text()
-	c.Text = strings.TrimSpace(s.Find("dd.box_card_text").Text())
 
-	fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q\n", c.ID, c.Name, c.Attribute)
+	// If ID not found in link_value, try cid input
+	if len(c.ID) == 0 {
+		if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
+			fmt.Fprintf(os.Stderr, "DEBUG: cid value: %q\n", cidVal)
+			c.ID = cidVal
+		}
+	}
+
+	// Extract card name
+	c.Name = s.Find("span.card_name").Text()
+	c.Name = strings.TrimSpace(c.Name)
+
+	// Extract limited/forbidden status from image alt text in the remove button
+	if limitedImg, ok := s.Find("dd.remove_btn a img").Attr("alt"); ok {
+		c.Limited = limitedImg
+		fmt.Fprintf(os.Stderr, "DEBUG: limited from img: %q\n", limitedImg)
+	}
+
+	// Extract attribute (get the span inside span.box_card_attribute)
+	c.Attribute = s.Find("span.box_card_attribute > span").Text()
+	c.Attribute = strings.TrimSpace(c.Attribute)
+
+	// Extract level/rank
+	c.Level = s.Find("span.box_card_level_rank > span").Text()
+	c.Level = strings.TrimSpace(c.Level)
+
+	// Extract link marker if present
+	c.Link = s.Find("span.box_card_linkmarker > span").Text()
+	c.Link = strings.TrimSpace(c.Link)
+
+	// Extract attack power
+	c.Attack = s.Find("span.atk_power > span").Text()
+	c.Attack = strings.TrimSpace(c.Attack)
+
+	// Extract defense power
+	c.Defence = s.Find("span.def_power > span").Text()
+	c.Defence = strings.TrimSpace(c.Defence)
+
+	// Extract card text/effect (all text from the card_info_species_and_other_item and following content)
+	c.Effect = s.Find("span.card_info_species_and_other_item").Text()
+	c.Effect = strings.TrimSpace(c.Effect)
+
+	// Extract full text description
+	c.Text = s.Find("dd.box_card_text").Text()
+	c.Text = strings.TrimSpace(c.Text)
+
+	fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q, Limited=%q\n", c.ID, c.Name, c.Attribute, c.Limited)
 
 	return c
 }
