@@ -53,7 +53,6 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		return c, err
 	}
 
-	// New HTML structure: cards are in div.t_row.c_normal
 	cardRows := doc.Find("div#article_body div.t_row.c_normal")
 	l := cardRows.Length()
 
