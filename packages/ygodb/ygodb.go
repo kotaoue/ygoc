@@ -3,7 +3,6 @@ package ygodb
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 
@@ -46,7 +45,6 @@ func (c Card) URL() string {
 
 // Scraping from YGO DB.
 func Scraping(keyword string, lang Language) (Card, error) {
-	debug := os.Getenv("YGOC_DEBUG") != ""
 	keyword = url.QueryEscape(keyword)
 	c := Card{}
 
@@ -55,21 +53,9 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		return c, err
 	}
 
-	// Debug: print full HTML to stderr
-	if debug {
-		html, _ := doc.Html()
-		fmt.Fprintln(os.Stderr, "=== DEBUG HTML ===")
-		fmt.Fprintln(os.Stderr, html[:min(len(html), 10000)])
-		fmt.Fprintln(os.Stderr, "=== END DEBUG ===")
-	}
-
 	// New HTML structure: cards are in div.t_row.c_normal
 	cardRows := doc.Find("div#article_body div.t_row.c_normal")
 	l := cardRows.Length()
-
-	if debug {
-		fmt.Fprintf(os.Stderr, "DEBUG: card rows found: %d\n", l)
-	}
 
 	if l == 0 {
 		return c, fmt.Errorf("Error: %s", "Card not found.")
@@ -87,25 +73,16 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		cardRows.Each(func(index int, s *goquery.Selection) {
 			cardName := strings.ToLower(s.Find("span.card_name").Text())
 			cardName = strings.TrimSpace(cardName)
-			if debug {
-				fmt.Fprintf(os.Stderr, "DEBUG: comparing %q with %q\n", keywordLower, cardName)
-			}
 
 			if strings.EqualFold(keywordLower, cardName) {
 				if len(c.ID) == 0 {
 					c = scrapingCard(s)
-					if debug {
-						fmt.Fprintf(os.Stderr, "DEBUG: exact matched card: %q\n", cardName)
-					}
 				}
 				return
 			}
 
 			if strings.Contains(cardName, keywordLower) && len(partial.ID) == 0 {
 				partial = scrapingCard(s)
-				if debug {
-					fmt.Fprintf(os.Stderr, "DEBUG: partial matched card: %q\n", cardName)
-				}
 			}
 		})
 
@@ -114,13 +91,8 @@ func Scraping(keyword string, lang Language) (Card, error) {
 				c = partial
 			} else {
 				// If no match found, return the first card
-				if debug {
-					fmt.Fprintf(os.Stderr, "DEBUG: no exact/partial match, using first card\n")
-				}
 				c = scrapingCard(cardRows.First())
 			}
-		} else if debug {
-			fmt.Fprintf(os.Stderr, "DEBUG: using exact match\n")
 		}
 	}
 
@@ -133,18 +105,12 @@ func scrapingCard(s *goquery.Selection) Card {
 
 	// Extract card ID from link_value input
 	if v, ok := s.Find("input.link_value").Attr("value"); ok {
-		if os.Getenv("YGOC_DEBUG") != "" {
-			fmt.Fprintf(os.Stderr, "DEBUG: link_value: %q\n", v)
-		}
 		c.ID = ExtractCardID(v)
 	}
 
 	// If ID not found in link_value, try cid input
 	if len(c.ID) == 0 {
 		if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
-			if os.Getenv("YGOC_DEBUG") != "" {
-				fmt.Fprintf(os.Stderr, "DEBUG: cid value: %q\n", cidVal)
-			}
 			c.ID = cidVal
 		}
 	}
@@ -192,10 +158,6 @@ func scrapingCard(s *goquery.Selection) Card {
 	c.Text = s.Find("dd.box_card_text").Text()
 	c.Text = strings.TrimSpace(c.Text)
 
-	if os.Getenv("YGOC_DEBUG") != "" {
-		fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q, Limited=%q\n", c.ID, c.Name, c.Attribute, c.Limited)
-	}
-
 	return c
 }
 
@@ -229,9 +191,3 @@ func ExtractValue(s string) string {
 	return reg.FindString(s)
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
