@@ -114,6 +114,7 @@ func scrapingCard(s *goquery.Selection) Card {
 	return c
 }
 
+// extractID extracts card ID from link_value first, then falls back to cid.
 func extractID(s *goquery.Selection) string {
 	if v, ok := s.Find("input.link_value").Attr("value"); ok {
 		id := ExtractCardID(v)
@@ -129,10 +130,12 @@ func extractID(s *goquery.Selection) string {
 	return ""
 }
 
+// extractName extracts card name text.
 func extractName(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.card_name").Text())
 }
 
+// extractLimited extracts limited/forbidden status text.
 func extractLimited(s *goquery.Selection) string {
 	if limitedImg, ok := s.Find("dd.remove_btn a img").Attr("alt"); ok {
 		return limitedImg
@@ -146,30 +149,37 @@ func extractLimited(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("div.lr_icon span").First().Text())
 }
 
+// extractAttribute extracts card attribute text.
 func extractAttribute(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.box_card_attribute > span").Text())
 }
 
+// extractLevel extracts card level/rank text.
 func extractLevel(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.box_card_level_rank > span").Text())
 }
 
+// extractLink extracts link marker text.
 func extractLink(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.box_card_linkmarker > span").Text())
 }
 
+// extractAttack extracts attack value text.
 func extractAttack(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.atk_power > span").Text())
 }
 
+// extractDefense extracts defense value text.
 func extractDefense(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.def_power > span").Text())
 }
 
+// extractEffect extracts effect label text.
 func extractEffect(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("span.box_card_effect > span").Text())
 }
 
+// extractText extracts card description text.
 func extractText(s *goquery.Selection) string {
 	return strings.TrimSpace(s.Find("dd.box_card_text").Text())
 }
