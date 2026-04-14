@@ -63,8 +63,6 @@ func Scraping(keyword string, lang Language) (Card, error) {
 	if l == 1 {
 		c = scrapingCard(cardRows.First())
 	} else if l > 1 {
-		// Multiple cards found, try to match by name
-		// URL decode the keyword for comparison
 		keywordDecoded, _ := url.QueryUnescape(keyword)
 		keywordLower := strings.ToLower(keywordDecoded)
 		partial := Card{}
@@ -102,23 +100,19 @@ func Scraping(keyword string, lang Language) (Card, error) {
 func scrapingCard(s *goquery.Selection) Card {
 	c := Card{}
 
-	// Extract card ID from link_value input
 	if v, ok := s.Find("input.link_value").Attr("value"); ok {
 		c.ID = ExtractCardID(v)
 	}
 
-	// If ID not found in link_value, try cid input
 	if len(c.ID) == 0 {
 		if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
 			c.ID = cidVal
 		}
 	}
 
-	// Extract card name
 	c.Name = s.Find("span.card_name").Text()
 	c.Name = strings.TrimSpace(c.Name)
 
-	// Extract limited/forbidden status
 	if limitedImg, ok := s.Find("dd.remove_btn a img").Attr("alt"); ok {
 		c.Limited = limitedImg
 	}
@@ -129,31 +123,24 @@ func scrapingCard(s *goquery.Selection) Card {
 		c.Limited = strings.TrimSpace(s.Find("div.lr_icon span").First().Text())
 	}
 
-	// Extract attribute (get the span inside span.box_card_attribute)
 	c.Attribute = s.Find("span.box_card_attribute > span").Text()
 	c.Attribute = strings.TrimSpace(c.Attribute)
 
-	// Extract level/rank
 	c.Level = s.Find("span.box_card_level_rank > span").Text()
 	c.Level = strings.TrimSpace(c.Level)
 
-	// Extract link marker if present
 	c.Link = s.Find("span.box_card_linkmarker > span").Text()
 	c.Link = strings.TrimSpace(c.Link)
 
-	// Extract attack power
 	c.Attack = s.Find("span.atk_power > span").Text()
 	c.Attack = strings.TrimSpace(c.Attack)
 
-	// Extract defense power
 	c.Defence = s.Find("span.def_power > span").Text()
 	c.Defence = strings.TrimSpace(c.Defence)
 
-	// Keep legacy behavior: only extract explicit effect label if present.
 	c.Effect = s.Find("span.box_card_effect > span").Text()
 	c.Effect = strings.TrimSpace(c.Effect)
 
-	// Extract full text description
 	c.Text = s.Find("dd.box_card_text").Text()
 	c.Text = strings.TrimSpace(c.Text)
 
