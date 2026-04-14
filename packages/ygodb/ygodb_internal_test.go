@@ -16,80 +16,100 @@ func newSelection(t *testing.T, html string) *goquery.Selection {
 	return doc.Find("div.root")
 }
 
-func Test_extractID_from_link_value(t *testing.T) {
-	html := `<div class="root">
-		<input class="link_value" value="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=4007" />
-	</div>`
-	s := newSelection(t, html)
-	got := extractID(s)
-	if got != "4007" {
-		t.Errorf("extractID from link_value: got %q, want %q", got, "4007")
+func Test_extractID(t *testing.T) {
+	tests := []struct {
+		name string
+		html string
+		want string
+	}{
+		{
+			name: "from-link-value",
+			html: `<div class="root">
+				<input class="link_value" value="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=2&cid=4007" />
+			</div>`,
+			want: "4007",
+		},
+		{
+			name: "fallback-to-cid",
+			html: `<div class="root">
+				<input class="link_value" value="https://example.com/page?ope=1" />
+				<input class="cid" value="9999" />
+			</div>`,
+			want: "9999",
+		},
+		{
+			name: "empty",
+			html: `<div class="root"></div>`,
+			want: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newSelection(t, tt.html)
+			got := extractID(s)
+			if got != tt.want {
+				t.Errorf("extractID() got %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 
-func Test_extractID_fallback_to_cid(t *testing.T) {
-	// link_value exists but value does not contain cid=, so fall back to input.cid
-	html := `<div class="root">
-		<input class="link_value" value="https://example.com/page?ope=1" />
-		<input class="cid" value="9999" />
-	</div>`
-	s := newSelection(t, html)
-	got := extractID(s)
-	if got != "9999" {
-		t.Errorf("extractID fallback to cid: got %q, want %q", got, "9999")
+func Test_extractLimited(t *testing.T) {
+	tests := []struct {
+		name string
+		html string
+		want string
+	}{
+		{
+			name: "from-img-alt",
+			html: `<div class="root">
+				<dd class="remove_btn"><a><img alt="Forbidden" /></a></dd>
+			</div>`,
+			want: "Forbidden",
+		},
+		{
+			name: "from-p",
+			html: `<div class="root">
+				<div class="lr_icon"><p>Limited</p></div>
+			</div>`,
+			want: "Limited",
+		},
+		{
+			name: "from-span",
+			html: `<div class="root">
+				<div class="lr_icon"><p></p><span>Semi-Limited</span></div>
+			</div>`,
+			want: "Semi-Limited",
+		},
 	}
-}
 
-func Test_extractID_empty(t *testing.T) {
-	// No link_value, no cid inputs
-	html := `<div class="root"></div>`
-	s := newSelection(t, html)
-	got := extractID(s)
-	if got != "" {
-		t.Errorf("extractID empty: got %q, want %q", got, "")
-	}
-}
-
-func Test_extractLimited_from_img_alt(t *testing.T) {
-	html := `<div class="root">
-		<dd class="remove_btn"><a><img alt="Forbidden" /></a></dd>
-	</div>`
-	s := newSelection(t, html)
-	got := extractLimited(s)
-	if got != "Forbidden" {
-		t.Errorf("extractLimited from img alt: got %q, want %q", got, "Forbidden")
-	}
-}
-
-func Test_extractLimited_from_p(t *testing.T) {
-	// No img alt; div.lr_icon p has text
-	html := `<div class="root">
-		<div class="lr_icon"><p>Limited</p></div>
-	</div>`
-	s := newSelection(t, html)
-	got := extractLimited(s)
-	if got != "Limited" {
-		t.Errorf("extractLimited from p: got %q, want %q", got, "Limited")
-	}
-}
-
-func Test_extractLimited_from_span(t *testing.T) {
-	// No img alt, empty p; div.lr_icon span has text
-	html := `<div class="root">
-		<div class="lr_icon"><p></p><span>Semi-Limited</span></div>
-	</div>`
-	s := newSelection(t, html)
-	got := extractLimited(s)
-	if got != "Semi-Limited" {
-		t.Errorf("extractLimited from span: got %q, want %q", got, "Semi-Limited")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newSelection(t, tt.html)
+			got := extractLimited(s)
+			if got != tt.want {
+				t.Errorf("extractLimited() got %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 
 func Test_siteURL(t *testing.T) {
-	got := siteURL()
-	want := "https://www.db.yugioh-card.com"
-	if got != want {
-		t.Errorf("siteURL() = %q, want %q", got, want)
+	tests := []struct {
+		name string
+		want string
+	}{
+		{"default", "https://www.db.yugioh-card.com"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := siteURL()
+			if got != tt.want {
+				t.Errorf("siteURL() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }
 
