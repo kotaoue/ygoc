@@ -100,51 +100,78 @@ func Scraping(keyword string, lang Language) (Card, error) {
 func scrapingCard(s *goquery.Selection) Card {
 	c := Card{}
 
-	if v, ok := s.Find("input.link_value").Attr("value"); ok {
-		c.ID = ExtractCardID(v)
-	}
+	c.ID = extractID(s)
+	c.Name = extractName(s)
+	c.Limited = extractLimited(s)
+	c.Attribute = extractAttribute(s)
+	c.Level = extractLevel(s)
+	c.Link = extractLink(s)
+	c.Attack = extractAttack(s)
+	c.Defense = extractDefense(s)
+	c.Effect = extractEffect(s)
+	c.Text = extractText(s)
 
-	if len(c.ID) == 0 {
-		if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
-			c.ID = cidVal
+	return c
+}
+
+func extractID(s *goquery.Selection) string {
+	if v, ok := s.Find("input.link_value").Attr("value"); ok {
+		id := ExtractCardID(v)
+		if len(id) > 0 {
+			return id
 		}
 	}
 
-	c.Name = s.Find("span.card_name").Text()
-	c.Name = strings.TrimSpace(c.Name)
+	if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
+		return cidVal
+	}
 
+	return ""
+}
+
+func extractName(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.card_name").Text())
+}
+
+func extractLimited(s *goquery.Selection) string {
 	if limitedImg, ok := s.Find("dd.remove_btn a img").Attr("alt"); ok {
-		c.Limited = limitedImg
-	}
-	if len(c.Limited) == 0 {
-		c.Limited = strings.TrimSpace(s.Find("div.lr_icon p").First().Text())
-	}
-	if len(c.Limited) == 0 {
-		c.Limited = strings.TrimSpace(s.Find("div.lr_icon span").First().Text())
+		return limitedImg
 	}
 
-	c.Attribute = s.Find("span.box_card_attribute > span").Text()
-	c.Attribute = strings.TrimSpace(c.Attribute)
+	limited := strings.TrimSpace(s.Find("div.lr_icon p").First().Text())
+	if len(limited) > 0 {
+		return limited
+	}
 
-	c.Level = s.Find("span.box_card_level_rank > span").Text()
-	c.Level = strings.TrimSpace(c.Level)
+	return strings.TrimSpace(s.Find("div.lr_icon span").First().Text())
+}
 
-	c.Link = s.Find("span.box_card_linkmarker > span").Text()
-	c.Link = strings.TrimSpace(c.Link)
+func extractAttribute(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_attribute > span").Text())
+}
 
-	c.Attack = s.Find("span.atk_power > span").Text()
-	c.Attack = strings.TrimSpace(c.Attack)
+func extractLevel(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_level_rank > span").Text())
+}
 
-	c.Defense = s.Find("span.def_power > span").Text()
-	c.Defense = strings.TrimSpace(c.Defense)
+func extractLink(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_linkmarker > span").Text())
+}
 
-	c.Effect = s.Find("span.box_card_effect > span").Text()
-	c.Effect = strings.TrimSpace(c.Effect)
+func extractAttack(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.atk_power > span").Text())
+}
 
-	c.Text = s.Find("dd.box_card_text").Text()
-	c.Text = strings.TrimSpace(c.Text)
+func extractDefense(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.def_power > span").Text())
+}
 
-	return c
+func extractEffect(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_effect > span").Text())
+}
+
+func extractText(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("dd.box_card_text").Text())
 }
 
 // siteURL is site url for YGO DB.
