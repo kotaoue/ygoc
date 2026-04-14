@@ -75,7 +75,7 @@ func atoMode(s string) mode {
 	return modeUnknown
 }
 
-func init() {
+func main() {
 	m := flag.String("mode", fmt.Sprint(modeSelect), fmt.Sprintf("Specifies the behavior of this code. [%s]", strings.Join(modes(), "|")))
 	l := flag.String("lang", string(ygodb.LangJA), "Language for selecting from the DB.")
 	c := flag.String("name", "", "The card name you want to select.")
@@ -88,9 +88,7 @@ func init() {
 		cardName:    *c,
 		file:        *f,
 	}
-}
 
-func main() {
 	switch opt.executeMode {
 	case modeSelect:
 		for _, v := range selectCard(opt.cardName, opt.lang) {
