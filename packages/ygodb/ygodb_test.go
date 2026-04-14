@@ -44,7 +44,7 @@ func Test_Scraping(t *testing.T) {
 	e = ygodb.Card{
 		ID:        "4343",
 		Name:      "Raigeki",
-		Limited:   "Limited",
+		Limited:   "",
 		Attribute: "SPELL",
 		Text:      "Destroy all monsters your opponent controls.",
 	}

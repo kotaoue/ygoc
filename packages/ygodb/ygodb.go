@@ -82,6 +82,7 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		// URL decode the keyword for comparison
 		keywordDecoded, _ := url.QueryUnescape(keyword)
 		keywordLower := strings.ToLower(keywordDecoded)
+		partial := Card{}
 
 		cardRows.Each(func(index int, s *goquery.Selection) {
 			cardName := strings.ToLower(s.Find("span.card_name").Text())
@@ -90,22 +91,36 @@ func Scraping(keyword string, lang Language) (Card, error) {
 				fmt.Fprintf(os.Stderr, "DEBUG: comparing %q with %q\n", keywordLower, cardName)
 			}
 
-			if strings.Contains(cardName, keywordLower) || strings.EqualFold(keywordLower, cardName) {
+			if strings.EqualFold(keywordLower, cardName) {
 				if len(c.ID) == 0 {
 					c = scrapingCard(s)
 					if debug {
-						fmt.Fprintf(os.Stderr, "DEBUG: matched card: %q\n", cardName)
+						fmt.Fprintf(os.Stderr, "DEBUG: exact matched card: %q\n", cardName)
 					}
+				}
+				return
+			}
+
+			if strings.Contains(cardName, keywordLower) && len(partial.ID) == 0 {
+				partial = scrapingCard(s)
+				if debug {
+					fmt.Fprintf(os.Stderr, "DEBUG: partial matched card: %q\n", cardName)
 				}
 			}
 		})
 
 		if len(c.ID) == 0 {
-			// If exact match failed, return the first card
-			if debug {
-				fmt.Fprintf(os.Stderr, "DEBUG: no exact match, using first card\n")
+			if len(partial.ID) > 0 {
+				c = partial
+			} else {
+				// If no match found, return the first card
+				if debug {
+					fmt.Fprintf(os.Stderr, "DEBUG: no exact/partial match, using first card\n")
+				}
+				c = scrapingCard(cardRows.First())
 			}
-			c = scrapingCard(cardRows.First())
+		} else if debug {
+			fmt.Fprintf(os.Stderr, "DEBUG: using exact match\n")
 		}
 	}
 
