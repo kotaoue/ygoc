@@ -188,7 +188,7 @@ func isPrettyTarget(s string) bool {
 	return md.IsList(s) && !md.IsLink(s)
 }
 
-// help is priting the mode options for this code.
+// help is printing the mode options for this code.
 func help() {
 	fmt.Println("The execute modes of this code.")
 	fmt.Println("You specify any one to '-mode'.")
