@@ -15,13 +15,13 @@ type Language string
 // List of supported languages at YGO DB.
 const (
 	LangJA Language = "ja" // 日本語
-	LangEN          = "en" // English
-	LangDE          = "de" // Deutsch
-	LangFR          = "fr" // Français
-	LangIT          = "it" // Italiano
-	LangES          = "es" // Español
-	LangPT          = "pt" // Portugues
-	LangKO          = "ko" // 한글
+	LangEN Language = "en" // English
+	LangDE Language = "de" // Deutsch
+	LangFR Language = "fr" // Français
+	LangIT Language = "it" // Italiano
+	LangES Language = "es" // Español
+	LangPT Language = "pt" // Portugues
+	LangKO Language = "ko" // 한글
 )
 
 // Card is parameter set for YGO Card.
@@ -34,7 +34,7 @@ type Card struct {
 	Level     string
 	Link      string
 	Attack    string
-	Defence   string
+	Defense   string
 	Text      string
 }
 
@@ -53,23 +53,44 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		return c, err
 	}
 
-	boxList := doc.Find("div#article_body > table > tbody > tr > td > div.list_style > ul.box_list")
-	l := boxList.Children().Length()
+	cardRows := doc.Find("div#article_body div.t_row.c_normal")
+	l := cardRows.Length()
+
+	if l == 0 {
+		return c, fmt.Errorf("Error: %s", "Card not found.")
+	}
 
 	if l == 1 {
-		c = scrapingCard(boxList.Children())
+		c = scrapingCard(cardRows.First())
 	} else if l > 1 {
-		boxList.Children().Each(func(index int, s *goquery.Selection) {
-			if strings.EqualFold(keyword, s.Find("dt.box_card_name > span.card_status > strong").Text()) {
-				c = scrapingCard(s)
+		keywordDecoded, _ := url.QueryUnescape(keyword)
+		keywordLower := strings.ToLower(keywordDecoded)
+		partial := Card{}
+
+		cardRows.Each(func(index int, s *goquery.Selection) {
+			cardName := strings.ToLower(s.Find("span.card_name").Text())
+			cardName = strings.TrimSpace(cardName)
+
+			if strings.EqualFold(keywordLower, cardName) {
+				if len(c.ID) == 0 {
+					c = scrapingCard(s)
+				}
+				return
+			}
+
+			if strings.Contains(cardName, keywordLower) && len(partial.ID) == 0 {
+				partial = scrapingCard(s)
 			}
 		})
 
 		if len(c.ID) == 0 {
-			return c, fmt.Errorf("Error: %s", "Couldn't narrow down the cards to one.")
+			if len(partial.ID) > 0 {
+				c = partial
+			} else {
+				// If no match found, return the first card
+				c = scrapingCard(cardRows.First())
+			}
 		}
-	} else {
-		return c, fmt.Errorf("Error: %s", "Card not found.")
 	}
 
 	return c, nil
@@ -79,22 +100,88 @@ func Scraping(keyword string, lang Language) (Card, error) {
 func scrapingCard(s *goquery.Selection) Card {
 	c := Card{}
 
-	if v, ok := s.Find("input.link_value").Attr("value"); ok {
-		c.ID = ExtractCardID(v)
-	}
-	c.Name = s.Find("dt.box_card_name > span.card_status > strong").Text()
-	if a, ok := s.Find("dt.box_card_name > span.card_status > span.f_right > img").Attr("alt"); ok {
-		c.Limited = a
-	}
-	c.Attribute = s.Find("dd.box_card_spec > span.box_card_attribute > span").Text()
-	c.Effect = s.Find("dd.box_card_spec > span.box_card_effect > span").Text()
-	c.Level = s.Find("dd.box_card_spec > span.box_card_level_rank > span").Text()
-	c.Link = s.Find("dd.box_card_spec > span.box_card_linkmarker > span").Text()
-	c.Attack = s.Find("dd.box_card_spec > span.atk_power").Text()
-	c.Defence = s.Find("dd.box_card_spec > span.def_power").Text()
-	c.Text = strings.TrimSpace(s.Find("dd.box_card_text").Text())
+	c.ID = extractID(s)
+	c.Name = extractName(s)
+	c.Limited = extractLimited(s)
+	c.Attribute = extractAttribute(s)
+	c.Level = extractLevel(s)
+	c.Link = extractLink(s)
+	c.Attack = extractAttack(s)
+	c.Defense = extractDefense(s)
+	c.Effect = extractEffect(s)
+	c.Text = extractText(s)
 
 	return c
+}
+
+// extractID extracts card ID from link_value first, then falls back to cid.
+func extractID(s *goquery.Selection) string {
+	if v, ok := s.Find("input.link_value").Attr("value"); ok {
+		id := ExtractCardID(v)
+		if len(id) > 0 {
+			return id
+		}
+	}
+
+	if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
+		return cidVal
+	}
+
+	return ""
+}
+
+// extractName extracts card name text.
+func extractName(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.card_name").Text())
+}
+
+// extractLimited extracts limited/forbidden status text.
+func extractLimited(s *goquery.Selection) string {
+	if limitedImg, ok := s.Find("dd.remove_btn a img").Attr("alt"); ok {
+		return limitedImg
+	}
+
+	limited := strings.TrimSpace(s.Find("div.lr_icon p").First().Text())
+	if len(limited) > 0 {
+		return limited
+	}
+
+	return strings.TrimSpace(s.Find("div.lr_icon span").First().Text())
+}
+
+// extractAttribute extracts card attribute text.
+func extractAttribute(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_attribute > span").Text())
+}
+
+// extractLevel extracts card level/rank text.
+func extractLevel(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_level_rank > span").Text())
+}
+
+// extractLink extracts link marker text.
+func extractLink(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_linkmarker > span").Text())
+}
+
+// extractAttack extracts attack value text.
+func extractAttack(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.atk_power > span").Text())
+}
+
+// extractDefense extracts defense value text.
+func extractDefense(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.def_power > span").Text())
+}
+
+// extractEffect extracts effect label text.
+func extractEffect(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("span.box_card_effect > span").Text())
+}
+
+// extractText extracts card description text.
+func extractText(s *goquery.Selection) string {
+	return strings.TrimSpace(s.Find("dd.box_card_text").Text())
 }
 
 // siteURL is site url for YGO DB.
@@ -122,11 +209,8 @@ func ExtractCardID(s string) string {
 }
 
 // ExtractValue is extract value of number from string.
-//
-// Some parameter  can't be expressed as numbers.
-// For that reason returning as strings.
-// Example: Link Monster's deffence.
 func ExtractValue(s string) string {
 	reg := regexp.MustCompile(`\d+`)
 	return reg.FindString(s)
 }
+

@@ -134,8 +134,8 @@ func selectCard(cardName string, lang ygodb.Language) []string {
 	if len(c.Attack) > 0 {
 		s = append(s, c.Attack)
 	}
-	if len(c.Defence) > 0 {
-		s = append(s, c.Defence)
+	if len(c.Defense) > 0 {
+		s = append(s, c.Defense)
 	}
 	if len(c.Text) > 0 {
 		s = append(s, c.Text)
@@ -188,7 +188,7 @@ func isPrettyTarget(s string) bool {
 	return md.IsList(s) && !md.IsLink(s)
 }
 
-// help is priting the mode options for this code.
+// help is printing the mode options for this code.
 func help() {
 	fmt.Println("The execute modes of this code.")
 	fmt.Println("You specify any one to '-mode'.")
