@@ -79,12 +79,12 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		// URL decode the keyword for comparison
 		keywordDecoded, _ := url.QueryUnescape(keyword)
 		keywordLower := strings.ToLower(keywordDecoded)
-		
+
 		cardRows.Each(func(index int, s *goquery.Selection) {
 			cardName := strings.ToLower(s.Find("span.card_name").Text())
 			cardName = strings.TrimSpace(cardName)
 			fmt.Fprintf(os.Stderr, "DEBUG: comparing %q with %q\n", keywordLower, cardName)
-			
+
 			if strings.Contains(cardName, keywordLower) || strings.EqualFold(keywordLower, cardName) {
 				if len(c.ID) == 0 {
 					c = scrapingCard(s)
