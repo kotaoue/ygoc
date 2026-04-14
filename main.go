@@ -134,8 +134,8 @@ func selectCard(cardName string, lang ygodb.Language) []string {
 	if len(c.Attack) > 0 {
 		s = append(s, c.Attack)
 	}
-	if len(c.Defence) > 0 {
-		s = append(s, c.Defence)
+	if len(c.Defense) > 0 {
+		s = append(s, c.Defense)
 	}
 	if len(c.Text) > 0 {
 		s = append(s, c.Text)

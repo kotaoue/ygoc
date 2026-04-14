@@ -34,7 +34,7 @@ type Card struct {
 	Level     string
 	Link      string
 	Attack    string
-	Defence   string
+	Defense   string
 	Text      string
 }
 
@@ -135,8 +135,8 @@ func scrapingCard(s *goquery.Selection) Card {
 	c.Attack = s.Find("span.atk_power > span").Text()
 	c.Attack = strings.TrimSpace(c.Attack)
 
-	c.Defence = s.Find("span.def_power > span").Text()
-	c.Defence = strings.TrimSpace(c.Defence)
+	c.Defense = s.Find("span.def_power > span").Text()
+	c.Defense = strings.TrimSpace(c.Defense)
 
 	c.Effect = s.Find("span.box_card_effect > span").Text()
 	c.Effect = strings.TrimSpace(c.Effect)
