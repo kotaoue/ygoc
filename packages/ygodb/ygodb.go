@@ -46,6 +46,7 @@ func (c Card) URL() string {
 
 // Scraping from YGO DB.
 func Scraping(keyword string, lang Language) (Card, error) {
+	debug := os.Getenv("YGOC_DEBUG") != ""
 	keyword = url.QueryEscape(keyword)
 	c := Card{}
 
@@ -55,7 +56,7 @@ func Scraping(keyword string, lang Language) (Card, error) {
 	}
 
 	// Debug: print full HTML to stderr
-	if os.Getenv("YGOC_DEBUG") != "" {
+	if debug {
 		html, _ := doc.Html()
 		fmt.Fprintln(os.Stderr, "=== DEBUG HTML ===")
 		fmt.Fprintln(os.Stderr, html[:min(len(html), 10000)])
@@ -66,7 +67,9 @@ func Scraping(keyword string, lang Language) (Card, error) {
 	cardRows := doc.Find("div#article_body div.t_row.c_normal")
 	l := cardRows.Length()
 
-	fmt.Fprintf(os.Stderr, "DEBUG: card rows found: %d\n", l)
+	if debug {
+		fmt.Fprintf(os.Stderr, "DEBUG: card rows found: %d\n", l)
+	}
 
 	if l == 0 {
 		return c, fmt.Errorf("Error: %s", "Card not found.")
@@ -83,19 +86,25 @@ func Scraping(keyword string, lang Language) (Card, error) {
 		cardRows.Each(func(index int, s *goquery.Selection) {
 			cardName := strings.ToLower(s.Find("span.card_name").Text())
 			cardName = strings.TrimSpace(cardName)
-			fmt.Fprintf(os.Stderr, "DEBUG: comparing %q with %q\n", keywordLower, cardName)
+			if debug {
+				fmt.Fprintf(os.Stderr, "DEBUG: comparing %q with %q\n", keywordLower, cardName)
+			}
 
 			if strings.Contains(cardName, keywordLower) || strings.EqualFold(keywordLower, cardName) {
 				if len(c.ID) == 0 {
 					c = scrapingCard(s)
-					fmt.Fprintf(os.Stderr, "DEBUG: matched card: %q\n", cardName)
+					if debug {
+						fmt.Fprintf(os.Stderr, "DEBUG: matched card: %q\n", cardName)
+					}
 				}
 			}
 		})
 
 		if len(c.ID) == 0 {
 			// If exact match failed, return the first card
-			fmt.Fprintf(os.Stderr, "DEBUG: no exact match, using first card\n")
+			if debug {
+				fmt.Fprintf(os.Stderr, "DEBUG: no exact match, using first card\n")
+			}
 			c = scrapingCard(cardRows.First())
 		}
 	}
@@ -109,14 +118,18 @@ func scrapingCard(s *goquery.Selection) Card {
 
 	// Extract card ID from link_value input
 	if v, ok := s.Find("input.link_value").Attr("value"); ok {
-		fmt.Fprintf(os.Stderr, "DEBUG: link_value: %q\n", v)
+		if os.Getenv("YGOC_DEBUG") != "" {
+			fmt.Fprintf(os.Stderr, "DEBUG: link_value: %q\n", v)
+		}
 		c.ID = ExtractCardID(v)
 	}
 
 	// If ID not found in link_value, try cid input
 	if len(c.ID) == 0 {
 		if cidVal, ok := s.Find("input.cid").Attr("value"); ok {
-			fmt.Fprintf(os.Stderr, "DEBUG: cid value: %q\n", cidVal)
+			if os.Getenv("YGOC_DEBUG") != "" {
+				fmt.Fprintf(os.Stderr, "DEBUG: cid value: %q\n", cidVal)
+			}
 			c.ID = cidVal
 		}
 	}
@@ -125,10 +138,15 @@ func scrapingCard(s *goquery.Selection) Card {
 	c.Name = s.Find("span.card_name").Text()
 	c.Name = strings.TrimSpace(c.Name)
 
-	// Extract limited/forbidden status from image alt text in the remove button
+	// Extract limited/forbidden status
 	if limitedImg, ok := s.Find("dd.remove_btn a img").Attr("alt"); ok {
 		c.Limited = limitedImg
-		fmt.Fprintf(os.Stderr, "DEBUG: limited from img: %q\n", limitedImg)
+	}
+	if len(c.Limited) == 0 {
+		c.Limited = strings.TrimSpace(s.Find("div.lr_icon p").First().Text())
+	}
+	if len(c.Limited) == 0 {
+		c.Limited = strings.TrimSpace(s.Find("div.lr_icon span").First().Text())
 	}
 
 	// Extract attribute (get the span inside span.box_card_attribute)
@@ -151,15 +169,17 @@ func scrapingCard(s *goquery.Selection) Card {
 	c.Defence = s.Find("span.def_power > span").Text()
 	c.Defence = strings.TrimSpace(c.Defence)
 
-	// Extract card text/effect (all text from the card_info_species_and_other_item and following content)
-	c.Effect = s.Find("span.card_info_species_and_other_item").Text()
+	// Keep legacy behavior: only extract explicit effect label if present.
+	c.Effect = s.Find("span.box_card_effect > span").Text()
 	c.Effect = strings.TrimSpace(c.Effect)
 
 	// Extract full text description
 	c.Text = s.Find("dd.box_card_text").Text()
 	c.Text = strings.TrimSpace(c.Text)
 
-	fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q, Limited=%q\n", c.ID, c.Name, c.Attribute, c.Limited)
+	if os.Getenv("YGOC_DEBUG") != "" {
+		fmt.Fprintf(os.Stderr, "DEBUG card: ID=%q, Name=%q, Attribute=%q, Limited=%q\n", c.ID, c.Name, c.Attribute, c.Limited)
+	}
 
 	return c
 }
