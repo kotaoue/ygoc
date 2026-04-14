@@ -15,13 +15,13 @@ type Language string
 // List of supported languages at YGO DB.
 const (
 	LangJA Language = "ja" // 日本語
-	LangEN          = "en" // English
-	LangDE          = "de" // Deutsch
-	LangFR          = "fr" // Français
-	LangIT          = "it" // Italiano
-	LangES          = "es" // Español
-	LangPT          = "pt" // Portugues
-	LangKO          = "ko" // 한글
+	LangEN Language = "en" // English
+	LangDE Language = "de" // Deutsch
+	LangFR Language = "fr" // Français
+	LangIT Language = "it" // Italiano
+	LangES Language = "es" // Español
+	LangPT Language = "pt" // Portugues
+	LangKO Language = "ko" // 한글
 )
 
 // Card is parameter set for YGO Card.
