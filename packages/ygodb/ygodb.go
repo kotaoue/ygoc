@@ -213,4 +213,3 @@ func ExtractValue(s string) string {
 	reg := regexp.MustCompile(`\d+`)
 	return reg.FindString(s)
 }
-
